@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Environment
+.env
+
+# Docker
+qdrant_storage/
+n8n_data/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Data
+data/processed/
+*.db
+
+my_own_writing
+sessions
+chroma_db

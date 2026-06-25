@@ -1,0 +1,150 @@
+{
+  "name": "Economic Query - Manual",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ask",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -384,
+        -80
+      ],
+      "id": "531f0914-75d7-46a5-ac71-f50923f2d3ae",
+      "typeVersion": 2.1,
+      "webhookId": "824a0942-2a2f-47cb-a669-bec81e815daa"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/api/v1/agent/webhook",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "your_API_key"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "question",
+              "value": "={{ $json.body.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -176,
+        -80
+      ],
+      "id": "47aa1e6f-673a-48eb-ae9b-93a49b992d81",
+      "typeVersion": 4.4
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"myField\": \"{{ $json }}\"\n}",
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        80,
+        -80
+      ],
+      "id": "f79fcc27-6568-45fc-becd-84a236714cfe",
+      "typeVersion": 1.5
+    },
+    {
+      "parameters": {
+        "fromEmail": "your_email",
+        "toEmail": "{{ $json.email || $json.body.email || testing@gmail.com }}",
+        "subject": "=Economic Analysis - {{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n<title>Economic Insight</title>\n<style>\n    /* Email-safe styles */\n    body {\n        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, Helvetica, sans-serif;\n        background: #f5f7fa;\n        margin: 0;\n        padding: 0;\n        color: #1a2332;\n        -webkit-text-size-adjust: 100%;\n    }\n    .container {\n        max-width: 620px;\n        margin: 0 auto;\n        background: #ffffff;\n        border-radius: 8px;\n        overflow: hidden;\n    }\n    .header {\n        background: #0f1a2e;\n        padding: 20px 25px;\n    }\n    .header h1 {\n        margin: 0;\n        color: #ffffff;\n        font-weight: 400;\n        font-size: 20px;\n    }\n    .header h1 span { font-weight: 700; color: #e8b82a; }\n    .header .date {\n        color: #8899aa;\n        font-size: 12px;\n        margin-top: 2px;\n    }\n    .content { padding: 20px 25px; }\n    .question-box {\n        background: #f0f4fe;\n        border-radius: 6px;\n        padding: 12px 16px;\n        margin-bottom: 18px;\n        border-left: 3px solid #1a5c9e;\n    }\n    .question-box .label {\n        font-size: 10px;\n        text-transform: uppercase;\n        letter-spacing: 0.5px;\n        color: #1a5c9e;\n        font-weight: 700;\n        margin-bottom: 3px;\n    }\n    .question-box .text {\n        font-size: 15px;\n        font-weight: 500;\n        color: #0f1a2e;\n        margin: 0;\n        line-height: 1.4;\n    }\n    .answer-box .label {\n        font-size: 10px;\n        text-transform: uppercase;\n        letter-spacing: 0.5px;\n        color: #6b7a8a;\n        font-weight: 700;\n        margin-bottom: 5px;\n        display: block;\n    }\n    .answer-box .content {\n        background: #fafbfc;\n        border-radius: 6px;\n        padding: 14px 16px;\n        border: 1px solid #eaeef2;\n        font-size: 14px;\n        line-height: 1.6;\n        color: #1e2a3a;\n        margin: 0 0 18px 0;\n    }\n    .meta-table {\n        width: 100%;\n        border-collapse: collapse;\n        background: #f8f9fb;\n        border-radius: 6px;\n        border: 1px solid #eaeef2;\n        margin: 14px 0 0 0;\n    }\n    .meta-table td {\n        padding: 8px 12px;\n        vertical-align: top;\n        width: 33.33%;\n    }\n    .meta-label {\n        font-size: 9px;\n        text-transform: uppercase;\n        letter-spacing: 0.4px;\n        color: #8a9aa8;\n        font-weight: 700;\n        display: block;\n    }\n    .meta-value {\n        font-size: 13px;\n        color: #1e2a3a;\n        font-weight: 500;\n        display: block;\n        margin-top: 1px;\n    }\n    .footer {\n        background: #f8f9fb;\n        padding: 14px 25px;\n        border-top: 1px solid #eaeef2;\n        font-size: 11px;\n        color: #7a8a9a;\n        line-height: 1.5;\n    }\n    .footer .disclaimer {\n        color: #c0392b;\n        font-weight: 600;\n    }\n    .footer a {\n        color: #1a5c9e;\n        text-decoration: underline;\n    }\n    /* Mobile friendly */\n    @media only screen and (max-width: 480px) {\n        .header { padding: 16px 18px; }\n        .header h1 { font-size: 18px; }\n        .content { padding: 16px 18px; }\n        .meta-table td { display: block; width: 100%; padding: 4px 12px; }\n        .footer { padding: 12px 18px; }\n    }\n</style>\n</head>\n<body>\n\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" bgcolor=\"#f5f7fa\">\n    <tr>\n        <td align=\"center\" style=\"padding: 20px 0;\">\n            <div class=\"container\">\n\n                <!-- HEADER -->\n                <div class=\"header\">\n                    <h1>📊 Economic <span>Insight</span></h1>\n                    <div class=\"date\">{{ $now.format('dd MMM yyyy') }} &bull; {{ $now.format('HH:mm') }}</div>\n                </div>\n\n                <!-- CONTENT -->\n                <div class=\"content\">\n\n                    <!-- Question (pulled directly from the original Webhook trigger node, not the API response) -->\n                    <div class=\"question-box\">\n                        <div class=\"label\">📌 Your Inquiry</div>\n                        <p class=\"text\">{{ $('Webhook').item.json.body.question || $('Webhook').item.json.question || $json.question || 'No question provided' }}</p>\n                    </div>\n\n                    <!-- Answer -->\n                    <div class=\"answer-box\">\n                        <span class=\"label\">💡 Analysis</span>\n                        <div class=\"content\">\n                            {{ $json.response || 'No analysis available' }}\n                        </div>\n                    </div>\n\n                    <!-- Meta -->\n                    <table class=\"meta-table\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                        <tr>\n                            <td><span class=\"meta-label\">🔄 Processing</span><span class=\"meta-value\">{{ $json.iterations || 'N/A' }}</span></td>\n                            <td><span class=\"meta-label\">📊 Source</span><span class=\"meta-value\">Economic Advisor AI</span></td>\n                            <td><span class=\"meta-label\">🔒 Confidence</span><span class=\"meta-value\">{{ $json.confidence || 'High' }}</span></td>\n                        </tr>\n                    </table>\n\n                </div>\n\n                <!-- FOOTER -->\n                <div class=\"footer\">\n                    <span class=\"disclaimer\">⚠️ Not financial advice</span> &bull; For educational purposes only<br>\n                    Generated by Economic Advisor AI &bull; <a href=\"{{ $json.unsubscribe_link || '#' }}\">Unsubscribe</a>\n                </div>\n\n            </div>\n        </td>\n    </tr>\n</table>\n\n</body>\n</html>",
+        "options": {}
+      },
+      "name": "Email Send1",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        272,
+        -240
+      ],
+      "id": "cd83ee1b-b742-42a2-affc-cd4488bd2617",
+      "typeVersion": 2.1,
+      "webhookId": "2bdb670d-2975-4d9f-b365-910900a5f28e",
+      "credentials": {
+        "smtp": {
+          "id": "sv5jfE7v2C8HTFNz",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Email Send1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "f9f5cdbb-47c4-4149-9a73-de179ec46de2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2c63006e6930b04a3501ae220a575ba41c5d9abe0c6c76efa69234c1201f26a8"
+  },
+  "nodeGroups": [],
+  "id": "C3OWJyiirRuBBRfq",
+  "tags": []
+}

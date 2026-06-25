@@ -1,0 +1,117 @@
+{
+  "name": "Economic Report - Simple",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -400,
+        32
+      ],
+      "typeVersion": 1.3,
+      "id": "52c51e5d-8251-4075-b120-18aa03ecd195"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/api/v1/agent/webhook/next",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "your_API_key"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "HTTP Request - Get Next",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 4.4,
+      "id": "6962191c-1261-4897-8f69-f6ba93113421"
+    },
+    {
+      "parameters": {
+        "fromEmail": "youremail@gmail.com",
+        "toEmail": "={{ $json.email_string }}",
+        "subject": "=Jojoba Economic News - {{ $json.question }}",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Jojoba Economic News - {{ $json.question }}</title>\n<style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f5f7fa; margin: 0; padding: 0; color: #1a2332; }\n    .container { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; }\n    .header { background: #0f1a2e; padding: 20px 25px; }\n    .header h1 { margin: 0; color: #ffffff; font-weight: 400; font-size: 20px; }\n    .header h1 span { font-weight: 700; color: #e8b82a; }\n    .header .date { color: #8899aa; font-size: 12px; margin-top: 2px; }\n    .content { padding: 20px 25px; }\n    .question-box { background: #f0f4fe; border-radius: 6px; padding: 12px 16px; margin-bottom: 18px; border-left: 3px solid #1a5c9e; }\n    .question-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #1a5c9e; font-weight: 700; }\n    .question-box .text { font-size: 15px; font-weight: 500; color: #0f1a2e; margin: 4px 0 0 0; }\n    .answer-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7a8a; font-weight: 700; display: block; margin-bottom: 5px; }\n    .answer-box .content { \n        background: #fafbfc; \n        border-radius: 6px; \n        padding: 14px 16px; \n        border: 1px solid #eaeef2; \n        font-size: 14px; \n        line-height: 1.6; \n        color: #1e2a3a; \n        margin: 0 0 18px 0; \n        white-space: pre-wrap; \n        word-wrap: break-word; \n        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;\n    }\n    .answer-box .content table {\n        width: 100%;\n        border-collapse: collapse;\n        margin: 10px 0;\n        font-size: 13px;\n    }\n    .answer-box .content table th,\n    .answer-box .content table td {\n        border: 1px solid #d0d7de;\n        padding: 8px 12px;\n        text-align: left;\n    }\n    .answer-box .content table th {\n        background: #f0f4fe;\n        font-weight: 600;\n        color: #0f1a2e;\n    }\n    .answer-box .content table tr:nth-child(even) {\n        background: #f8f9fb;\n    }\n    .answer-box .content table tr:hover {\n        background: #e8ecf1;\n    }\n    .answer-box .content ul, \n    .answer-box .content ol {\n        margin: 8px 0;\n        padding-left: 20px;\n    }\n    .answer-box .content li {\n        margin: 4px 0;\n    }\n    .answer-box .content h3 {\n        margin: 12px 0 8px 0;\n        color: #0f1a2e;\n        font-size: 15px;\n    }\n    .answer-box .content strong {\n        color: #0f1a2e;\n    }\n    .status-box { background: #f8f9fb; border-radius: 6px; padding: 12px 16px; border: 1px solid #eaeef2; }\n    .status-box .stat { display: inline-block; margin-right: 20px; }\n    .status-box .stat .value { font-weight: 600; color: #1a5c9e; }\n    .footer { background: #f8f9fb; padding: 14px 25px; border-top: 1px solid #eaeef2; font-size: 11px; color: #7a8a9a; }\n    .footer .disclaimer { color: #c0392b; font-weight: 600; }\n    \n    @media only screen and (max-width: 480px) {\n        .header { padding: 16px 18px; }\n        .header h1 { font-size: 18px; }\n        .content { padding: 16px 18px; }\n        .answer-box .content { padding: 12px 14px; font-size: 13px; }\n        .status-box .stat { display: block; margin-bottom: 4px; }\n        .footer { padding: 12px 18px; }\n    }\n</style>\n</head>\n<body>\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" bgcolor=\"#f5f7fa\">\n    <tr><td align=\"center\" style=\"padding: 20px 0;\">\n        <div class=\"container\">\n            <div class=\"header\">\n                <h1>📊 Jojoba <span>Economic News</span></h1>\n                <div class=\"date\">{{ $now.format('dd MMM yyyy') }} &bull; {{ $now.format('HH:mm') }}</div>\n            </div>\n            <div class=\"content\">\n                <div class=\"question-box\">\n                    <div class=\"label\">📋 Today's Question</div>\n                    <div class=\"text\">{{ $json.question || 'No question processed' }}</div>\n                </div>\n                <div class=\"answer-box\">\n                    <span class=\"label\">💡 Analysis</span>\n                    <div class=\"content\">{{ $json.response || 'No answer available' }}</div>\n                </div>\n                <div class=\"status-box\">\n                    <div class=\"stat\">⏱ <span class=\"value\">{{ $json.processing_time || 0 }}s</span></div>\n                    <div class=\"stat\">🔄 <span class=\"value\">{{ $json.iterations || 0 }}</span> iterations</div>\n                    <div class=\"stat\">📊 <span class=\"value\">{{ $json.queue_remaining || 0 }}</span> remaining</div>\n                    <div class=\"stat\">⏭️ Next: <span class=\"value\">{{ $json.next_question ? $json.next_question.substring(0, 30) + '...' : 'None' }}</span></div>\n                </div>\n            </div>\n            <div class=\"footer\">\n                <span class=\"disclaimer\">⚠️ Not financial advice</span> &bull; For educational purposes only\n                <br>Generated by Jojoba Economic Advisor AI\n                <br><span style=\"color:#7a8a9a;font-size:10px;\">Sent to {{ $json.email_count || 0 }} recipients</span>\n            </div>\n        </div>\n    </td></tr>\n</table>\n</body>\n</html>",
+        "options": {}
+      },
+      "name": "Email Send",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        256,
+        0
+      ],
+      "typeVersion": 2.1,
+      "id": "5c15239b-7813-4c7b-a782-ac0874639494",
+      "webhookId": "fb369091-e45f-41e8-9994-f8251d3f457b",
+      "credentials": {
+        "smtp": {
+          "id": "sv5jfE7v2C8HTFNz",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Get Next",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Get Next": {
+      "main": [
+        [
+          {
+            "node": "Email Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "9a870f24-0dae-4e2f-866c-31124a489d4a",
+  "meta": {
+    "instanceId": "2c63006e6930b04a3501ae220a575ba41c5d9abe0c6c76efa69234c1201f26a8"
+  },
+  "nodeGroups": [],
+  "id": "NayJF8dPe4RSav2o",
+  "tags": []
+}
