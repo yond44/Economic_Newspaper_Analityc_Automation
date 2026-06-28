@@ -1,127 +1,291 @@
-import os
-import json
+"""
+Email Manager Service - MongoDB version
+"""
 import logging
-from typing import List, Dict, Any, Optional
-from pathlib import Path
 from datetime import datetime
+from typing import Optional, List, Dict
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
 
-CURRENT_DIR = Path(__file__).parent
-PROJECT_ROOT = CURRENT_DIR.parent.parent
-EMAIL_FILE = PROJECT_ROOT / "data" / "email_contacts.json"
 
-EMAIL_FILE.parent.mkdir(parents=True, exist_ok=True)
+# ============================================
+# CRUD OPERATIONS
+# ============================================
 
-
-def initialize_email_file():
-    if not EMAIL_FILE.exists():
-        default_contacts = [
-            {
-                "id": 1,
-                "name": "Yonda Ekodirman",
-                "email": "yondaekodirman@gmail.com"
-            }
-        ]
-        with open(EMAIL_FILE, 'w') as f:
-            json.dump(default_contacts, f, indent=2)
-        logger.info(f"✅ Created email file with {len(default_contacts)} contacts")
-        return default_contacts
-    return get_all_emails()
-
-
-def get_all_emails() -> List[Dict[str, Any]]:
-    if not EMAIL_FILE.exists():
-        return initialize_email_file()
-    
-    with open(EMAIL_FILE, 'r') as f:
-        return json.load(f)
+async def get_all_emails(db: AsyncIOMotorDatabase) -> List[Dict]:
+    """Get all emails"""
+    try:
+        collection = db["emails"]
+        emails = await collection.find({}).to_list(None)
+        
+        # Convert ObjectId to string
+        for email in emails:
+            email["_id"] = str(email["_id"])
+        
+        logger.info(f"Retrieved {len(emails)} emails")
+        return emails
+    except Exception as e:
+        logger.error(f"Error getting all emails: {str(e)}")
+        return []
 
 
-def get_email_by_id(email_id: int) -> Optional[Dict[str, Any]]:
-    emails = get_all_emails()
-    for email in emails:
-        if email.get("id") == email_id:
+async def get_email_by_id(db: AsyncIOMotorDatabase, email_id: str) -> Optional[Dict]:
+    """Get email by ID"""
+    try:
+        from bson import ObjectId
+        
+        collection = db["emails"]
+        email = await collection.find_one({"_id": ObjectId(email_id)})
+        
+        if email:
+            email["_id"] = str(email["_id"])
+            logger.info(f"Retrieved email: {email_id}")
             return email
-    return None
+        
+        logger.warning(f"Email not found: {email_id}")
+        return None
+    except Exception as e:
+        logger.error(f"Error getting email {email_id}: {str(e)}")
+        return None
 
 
-def add_email(name: str, email: str) -> Dict[str, Any]:
-    emails = get_all_emails()
-    new_id = max([e.get("id", 0) for e in emails]) + 1 if emails else 1
-    
-    new_contact = {
-        "id": new_id,
-        "name": name.strip(),
-        "email": email.strip()
-    }
-    
-    emails.append(new_contact)
-    
-    with open(EMAIL_FILE, 'w') as f:
-        json.dump(emails, f, indent=2)
-    
-    logger.info(f"✅ Added email: {name} ({email})")
-    return new_contact
+async def add_email(
+    db: AsyncIOMotorDatabase,
+    name: str,
+    email: str
+) -> Optional[Dict]:
+    """Add new email"""
+    try:
+        collection = db["emails"]
+        
+        # Check if email already exists
+        existing = await collection.find_one({"email": email.lower()})
+        if existing:
+            logger.warning(f"Email already exists: {email}")
+            return None
+        
+        new_email = {
+            "name": name,
+            "email": email.lower(),
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        result = await collection.insert_one(new_email)
+        new_email["_id"] = str(result.inserted_id)
+        
+        logger.info(f"Email added: {result.inserted_id}")
+        return new_email
+    except Exception as e:
+        logger.error(f"Error adding email: {str(e)}")
+        return None
 
 
-def update_email(email_id: int, name: str, email: str) -> Optional[Dict[str, Any]]:
-    emails = get_all_emails()
-    
-    for i, contact in enumerate(emails):
-        if contact.get("id") == email_id:
-            emails[i] = {
-                "id": email_id,
-                "name": name.strip(),
-                "email": email.strip()
-            }
+async def update_email(
+    db: AsyncIOMotorDatabase,
+    email_id: str,
+    name: Optional[str] = None,
+    email: Optional[str] = None
+) -> Optional[Dict]:
+    """Update email"""
+    try:
+        from bson import ObjectId
+        
+        collection = db["emails"]
+        
+        # Build update dict
+        update_dict = {"updated_at": datetime.utcnow()}
+        
+        if name:
+            update_dict["name"] = name
+        if email:
+            # Check if new email already exists
+            existing = await collection.find_one({
+                "_id": {"$ne": ObjectId(email_id)},
+                "email": email.lower()
+            })
+            if existing:
+                logger.warning(f"Email already exists: {email}")
+                return None
             
-            with open(EMAIL_FILE, 'w') as f:
-                json.dump(emails, f, indent=2)
-            
-            logger.info(f"✅ Updated email: {name} ({email})")
-            return emails[i]
-    
-    return None
+            update_dict["email"] = email.lower()
+        
+        updated = await collection.find_one_and_update(
+            {"_id": ObjectId(email_id)},
+            {"$set": update_dict},
+            return_document=True
+        )
+        
+        if updated:
+            updated["_id"] = str(updated["_id"])
+            logger.info(f"Email updated: {email_id}")
+            return updated
+        
+        logger.warning(f"Email not found for update: {email_id}")
+        return None
+    except Exception as e:
+        logger.error(f"Error updating email: {str(e)}")
+        return None
 
 
-def delete_email(email_id: int) -> bool:
-    emails = get_all_emails()
-    
-    for i, contact in enumerate(emails):
-        if contact.get("id") == email_id:
-            deleted = emails.pop(i)
-            
-            with open(EMAIL_FILE, 'w') as f:
-                json.dump(emails, f, indent=2)
-            
-            logger.info(f"✅ Deleted email: {deleted.get('name')} ({deleted.get('email')})")
+async def delete_email(db: AsyncIOMotorDatabase, email_id: str) -> bool:
+    """Delete email"""
+    try:
+        from bson import ObjectId
+        
+        collection = db["emails"]
+        result = await collection.delete_one({"_id": ObjectId(email_id)})
+        
+        if result.deleted_count > 0:
+            logger.info(f"Email deleted: {email_id}")
             return True
-    
-    return False
+        
+        logger.warning(f"Email not found for deletion: {email_id}")
+        return False
+    except Exception as e:
+        logger.error(f"Error deleting email: {str(e)}")
+        return False
 
 
-def get_email_list() -> List[str]:
-    emails = get_all_emails()
-    return [e.get("email") for e in emails if e.get("email")]
+# ============================================
+# UTILITY FUNCTIONS
+# ============================================
+
+async def get_email_string(db: AsyncIOMotorDatabase) -> str:
+    """Get all emails as comma-separated string"""
+    try:
+        emails = await get_all_emails(db)
+        email_list = [e.get("email") for e in emails if e.get("email")]
+        return ", ".join(email_list)
+    except Exception as e:
+        logger.error(f"Error getting email string: {str(e)}")
+        return ""
 
 
-def get_email_string() -> str:
-    return ", ".join(get_email_list())
+async def get_email_count(db: AsyncIOMotorDatabase) -> int:
+    """Get total email count"""
+    try:
+        collection = db["emails"]
+        count = await collection.count_documents({})
+        return count
+    except Exception as e:
+        logger.error(f"Error getting email count: {str(e)}")
+        return 0
 
 
-def reset_email_file():
-    if EMAIL_FILE.exists():
-        EMAIL_FILE.unlink()
-    return initialize_email_file()
+async def reset_email_file(db: AsyncIOMotorDatabase) -> bool:
+    """Reset (delete all) emails"""
+    try:
+        collection = db["emails"]
+        result = await collection.delete_many({})
+        logger.info(f"Reset emails - deleted {result.deleted_count} documents")
+        return True
+    except Exception as e:
+        logger.error(f"Error resetting emails: {str(e)}")
+        return False
 
 
-def get_email_count() -> int:
-    return len(get_all_emails())
+async def initialize_email_file(
+    db: AsyncIOMotorDatabase,
+    initial_emails: Optional[List[Dict]] = None
+) -> bool:
+    """Initialize emails with default list"""
+    try:
+        if initial_emails is None:
+            initial_emails = []
+        
+        collection = db["emails"]
+        
+        # Clear existing
+        await collection.delete_many({})
+        
+        # Insert initial emails
+        for email in initial_emails:
+            email_doc = {
+                "name": email.get("name"),
+                "email": email.get("email", "").lower(),
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            await collection.insert_one(email_doc)
+        
+        logger.info(f"Emails initialized with {len(initial_emails)} contacts")
+        return True
+    except Exception as e:
+        logger.error(f"Error initializing emails: {str(e)}")
+        return False
 
 
-def get_file_paths() -> dict:
-    return {
-        "email_file": str(EMAIL_FILE),
-        "email_file_exists": EMAIL_FILE.exists()
-    }
+async def search_emails(
+    db: AsyncIOMotorDatabase,
+    query: str
+) -> List[Dict]:
+    """Search emails by name or email address"""
+    try:
+        collection = db["emails"]
+        query_lower = query.lower()
+        
+        emails = await collection.find({
+            "$or": [
+                {"name": {"$regex": query_lower, "$options": "i"}},
+                {"email": {"$regex": query_lower, "$options": "i"}}
+            ]
+        }).to_list(None)
+        
+        # Convert ObjectId to string
+        for email in emails:
+            email["_id"] = str(email["_id"])
+        
+        logger.info(f"Search found {len(emails)} emails for: {query}")
+        return emails
+    except Exception as e:
+        logger.error(f"Error searching emails: {str(e)}")
+        return []
+
+
+async def export_emails(
+    db: AsyncIOMotorDatabase,
+    format: str = "json"
+) -> Optional[str]:
+    """Export emails in specified format"""
+    try:
+        import json
+        
+        emails = await get_all_emails(db)
+        
+        if format == "json":
+            return json.dumps(emails, indent=2, default=str)
+        elif format == "csv":
+            if not emails:
+                return "name,email"
+            
+            lines = ["name,email"]
+            for email in emails:
+                name = email.get("name", "").replace(",", ";")
+                email_addr = email.get("email", "")
+                lines.append(f"{name},{email_addr}")
+            
+            return "\n".join(lines)
+        
+        logger.warning(f"Unsupported format: {format}")
+        return None
+    except Exception as e:
+        logger.error(f"Error exporting emails: {str(e)}")
+        return None
+
+
+async def get_email_stats(db: AsyncIOMotorDatabase) -> Dict:
+    """Get email statistics"""
+    try:
+        total = await get_email_count(db)
+        email_string = await get_email_string(db)
+        
+        return {
+            "total_emails": total,
+            "email_string": email_string,
+            "sample": email_string[:100] if email_string else ""
+        }
+    except Exception as e:
+        logger.error(f"Error getting stats: {str(e)}")
+        return {"total_emails": 0, "email_string": "", "sample": ""}

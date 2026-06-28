@@ -7,9 +7,15 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Use faster mirror
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+
+# Install problematic package first with longer timeout
+RUN pip install --no-cache-dir --timeout=1000 --retries=10 llama-index-llms-groq
+
+# Copy requirements and install rest
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --timeout=1000 --use-deprecated=legacy-resolver -r requirements.txt
 
 # Copy application code
 COPY src/ ./src/

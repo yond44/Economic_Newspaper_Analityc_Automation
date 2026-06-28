@@ -1,0 +1,73 @@
+{
+  "nodes": [
+    {
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [250, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Process & Refill",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [450, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/api/v1/questions/n8n/process-and-refill",
+        "sendQuery": true,
+        "queryParameters": {
+          "num_to_generate": 5,
+          "send_email": true,
+          "language": "en"
+        }
+      }
+    },
+    {
+      "name": "Check Queue Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [650, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "http://host.docker.internal:8000/api/v1/questions/n8n/status"
+      }
+    },
+    {
+      "name": "If Low Queue",
+      "type": "n8n-nodes-base.if",
+      "position": [850, 300],
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.queue_size }}",
+              "operation": "smaller",
+              "value2": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate More Questions",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1050, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/api/v1/questions/n8n/generate",
+        "sendQuery": true,
+        "queryParameters": {
+          "num_questions": 10,
+          "complexity": "medium"
+        }
+      }
+    }
+  ]
+}

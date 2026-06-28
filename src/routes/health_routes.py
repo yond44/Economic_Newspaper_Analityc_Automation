@@ -11,7 +11,7 @@ async def health():
 
 @router.get("/health/ready")
 async def ready():
-    status = get_agent_status()
+    status = await get_agent_status()
     return {"status": "ready" if status.get("initialized", False) else "not_ready"}
 
 

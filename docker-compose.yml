@@ -1,69 +1,64 @@
-version: '3.8'
 
 services:
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant_vector_db
-    ports:
-      - "6333:6333"
-      - "6334:6334"
-    volumes:
-      - ./qdrant_storage:/qdrant/storage
-    environment:
-      - QDRANT__SERVICE__GRPC_PORT=6334
-      - TZ=Asia/Jakarta
-    restart: unless-stopped
-
-  api:
+  # FastAPI App
+  app:
     build: .
-    container_name: llm_agent_api
+    container_name: jojoba-api
     ports:
       - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      - qdrant
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
     environment:
-      - TZ=Asia/Jakarta
-    restart: unless-stopped
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DEBUG=true
+      - RELOAD=true
+      - WEBHOOK_API_KEY=jojoba-webhook-key-2024
+      - DATABASE_URL=mongodb://host.docker.internal:27017/
+      - REDIS_URL=redis://redis:6379
+      - DB_NAME=llmautomationai
+    depends_on:
+      - redis
+    networks:
+      - jojoba-network
+    volumes:
+      - .:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
+  # Redis
+  redis:
+    image: redis:latest
+    container_name: jojoba-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - jojoba-network
+    volumes:
+      - redis_data:/data
+
+  # n8n
   n8n:
     image: n8nio/n8n:latest
-    container_name: n8n_workflow
+    container_name: jojoba-n8n
     ports:
       - "5678:5678"
     environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=password
-      - WEBHOOK_URL=http://localhost:5678/
-      - TZ=Asia/Jakarta
-      # Task Runner Configuration for Python
-      - N8N_RUNNERS_ENABLED=true
-      - N8N_RUNNERS_MODE=external
-      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
-      - N8N_RUNNERS_AUTH_TOKEN=your-secret-token-change-this
-      - N8N_NATIVE_PYTHON_RUNNER=true
-      # Python version
-      - N8N_PYTHON_VERSION=3.11
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_WEBHOOK_URL=http://host.docker.internal:5678
+      - N8N_EDITOR_BASE_URL=http://localhost:5678
+      - DB_TYPE=sqlite
+      - GENERIC_FUNCTION_ALLOWLIST=Math.random,Math.floor
+    networks:
+      - jojoba-network
     volumes:
-      - ./n8n_data:/home/node/.n8n
-      - ./n8n_task_runners:/opt/runners
-    restart: unless-stopped
+      - n8n_data:/home/node/.n8n
+      - ./n8n:/etc/n8n
 
-  # Add task runner container for Python support
-  n8n-task-runners:
-    image: n8nio/runners:latest
-    container_name: n8n_task_runners
-    environment:
-      - N8N_RUNNERS_AUTH_TOKEN=your-secret-token-change-this
-      - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
-      - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=15
-      - N8N_RUNNERS_LAUNCHER_LOG_LEVEL=info
-      - TZ=Asia/Jakarta
-    volumes:
-      - ./n8n_task_runners:/opt/runners
-    restart: unless-stopped
+networks:
+  jojoba-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  n8n_data:

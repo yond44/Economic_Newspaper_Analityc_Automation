@@ -1,37 +1,57 @@
-
+﻿# Core Framework
 fastapi
 uvicorn[standard]
 python-dotenv
 streamlit
 
-llama-index
-llama-index-vector-stores-qdrant
-llama-index-embeddings-ollama
-llama_index.llms.groq
-langgraph
+# Database & Async
+motor
+pymongo
+aiofiles
+
+# Security & Authentication
+bcrypt==4.0.1
+passlib==1.7.4
+python-multipart
+email-validator
+pyjwt
+
+# LLM & AI Frameworks
 langchain
 langchain-openai
-llama_index_core
-langchain_groq
+langchain-groq
+langgraph
+groq
+
+# LlamaIndex - Comment these out (they're causing the hang)
+llama-index
+llama-index-core
+llama-index-llms-groq
+llama-index-vector-stores-qdrant
+llama-index-vector-stores-chroma==0.5.5
+llama-index-embeddings-ollama
 llama-index-embeddings-fastembed
-llama-index-vector-stores-chroma
 
-fastembed
+# Vector Databases & Embeddings
 chromadb
-pydantic
-pydantic-settings
-tenacity
-
 qdrant-client
+fastembed
 
+# Data Processing & Validation
 pydantic
 pydantic-settings
+pydantic-core
 
-
+# Utilities
 tenacity
-python-multipart
-aiofiles
-email-validator
 jinja2
+httpx
+requests
 
-dotenv 
+# Development 
+pytest
+pytest-asyncio
+black
+flake8
+mypy
+motor
