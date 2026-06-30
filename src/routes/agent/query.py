@@ -186,32 +186,23 @@ async def batch_email(
         
         from src.services.agent import batch_processor
         
-        result = await batch_processor.process_batch(request)
+        # ✅ Attach the requesting user so history is tagged correctly
+        batch_processor._current_user_id = str(current_user.id)
+        batch_processor._current_username = current_user.username
         
         try:
-            await log_user_query(
-                db=db,
-                user_id=str(current_user.id),
-                question=request.question,
-                answer=f"Batch email sent to {len(request.emails)} recipients",
-                processing_time=0.0,
-                channel="batch",
-                language=request.language or "en",
-                response_type="batch_email",
-                success=True,
-                validated=True,
-                sources_count=0
-            )
-        except Exception as e:
-            logger.warning(f"⚠️ Failed to log batch: {str(e)}")
+            result = await batch_processor.process_batch(request, db=db)
+        finally:
+            # Clear so a subsequent request without auth context doesn't reuse stale values
+            batch_processor._current_user_id = None
+            batch_processor._current_username = None
         
-        logger.info(f"✅ Batch {result['batch_id']} created successfully")
+        logger.info(f"✅ Batch {result['batch_id']} created with status: {result.get('status')}")
         return result
         
     except Exception as e:
         logger.error(f"❌ Batch email error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error processing batch: {str(e)}")
-
 
 @router.get("/conversation/{thread_id}")
 async def get_conversation(

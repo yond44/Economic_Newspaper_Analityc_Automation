@@ -24,6 +24,19 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/history", tags=["history"])
 
 
+def _user_filter(current_user: UserInDB) -> Optional[str]:
+    """
+    Return the user_id filter to apply for history queries.
+    
+    - Admins see everything (return None = no filter).
+    - Regular users see entries matching their user_id OR system-generated
+      entries (handled in history_manager via the include_system flag).
+    """
+    if getattr(current_user, "role", None) == "admin" or getattr(current_user, "is_admin", False):
+        return None
+    return str(current_user.id)
+
+
 @router.post("", response_model=SentHistoryResponse, status_code=status.HTTP_201_CREATED)
 async def create_history_entry(
     history_data: SentHistoryCreate,
@@ -35,7 +48,7 @@ async def create_history_entry(
         history_id = await history_manager.create_history_entry(
             db=db,
             history_data=history_data,
-            user_id=current_user.id,
+            user_id=str(current_user.id),
             username=current_user.username
         )
         
@@ -64,26 +77,36 @@ async def get_history(
     skip: int = Query(0, ge=0),
     status_filter: Optional[str] = Query(None, description="Filter by status"),
     channel: Optional[str] = Query(None, description="Filter by channel"),
+    include_system: bool = Query(True, description="Include n8n/system-generated entries"),
     current_user: UserInDB = Depends(get_current_user),
     db = Depends(get_db)
 ):
-    """Get sent history entries"""
+    """Get sent history entries.
+    
+    Regular users see their own entries plus optionally system-generated ones
+    (from n8n automation). Admins see everything.
+    """
     try:
+        user_filter = _user_filter(current_user)
+        
         histories = await history_manager.get_history_entries(
             db=db,
             limit=limit,
             skip=skip,
             status=status_filter,
             channel=channel,
-            user_id=current_user.id
+            user_id=user_filter,
+            include_system=include_system,
         )
         
-        # Get total count
-        total = len(await history_manager.get_history_entries(
+        # Get total count without limit/skip
+        total = await history_manager.count_history_entries(
             db=db,
-            limit=10000,
-            user_id=current_user.id
-        ))
+            status=status_filter,
+            channel=channel,
+            user_id=user_filter,
+            include_system=include_system,
+        )
         
         return {
             "status": "success",
@@ -93,10 +116,33 @@ async def get_history(
         }
         
     except Exception as e:
-        logger.error(f"Error getting history: {str(e)}")
+        logger.error(f"Error getting history: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get history"
+        )
+
+
+@router.get("/stats/overview", response_model=SentHistoryStats)
+async def get_history_stats(
+    days: int = Query(7, ge=1, le=30),
+    current_user: UserInDB = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    """Get sent history statistics"""
+    try:
+        stats = await history_manager.get_history_stats(
+            db=db,
+            days=days,
+            user_id=_user_filter(current_user),
+        )
+        return stats
+        
+    except Exception as e:
+        logger.error(f"Error getting history stats: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get history stats"
         )
 
 
@@ -116,8 +162,10 @@ async def get_history_entry(
                 detail="History entry not found"
             )
         
-        # Check if user owns this entry
-        if entry.get("user_id") and entry["user_id"] != current_user.id:
+        # Access control: admins see all; users see own + system entries
+        is_admin = getattr(current_user, "role", None) == "admin" or getattr(current_user, "is_admin", False)
+        entry_user_id = entry.get("user_id")
+        if not is_admin and entry_user_id and entry_user_id not in (str(current_user.id), "system"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this history entry"
@@ -144,7 +192,6 @@ async def update_history_entry(
 ):
     """Update a history entry"""
     try:
-        # Check if entry exists and user owns it
         entry = await history_manager.get_history_entry(db, history_id)
         
         if not entry:
@@ -153,7 +200,9 @@ async def update_history_entry(
                 detail="History entry not found"
             )
         
-        if entry.get("user_id") and entry["user_id"] != current_user.id:
+        is_admin = getattr(current_user, "role", None) == "admin" or getattr(current_user, "is_admin", False)
+        entry_user_id = entry.get("user_id")
+        if not is_admin and entry_user_id and entry_user_id != str(current_user.id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this history entry"
@@ -196,7 +245,9 @@ async def delete_history_entry(
                 detail="History entry not found"
             )
         
-        if entry.get("user_id") and entry["user_id"] != current_user.id:
+        is_admin = getattr(current_user, "role", None) == "admin" or getattr(current_user, "is_admin", False)
+        entry_user_id = entry.get("user_id")
+        if not is_admin and entry_user_id and entry_user_id != str(current_user.id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this history entry"
@@ -225,37 +276,14 @@ async def delete_history_entry(
         )
 
 
-@router.get("/stats/overview", response_model=SentHistoryStats)
-async def get_history_stats(
-    days: int = Query(7, ge=1, le=30),
-    current_user: UserInDB = Depends(get_current_user),
-    db = Depends(get_db)
-):
-    """Get sent history statistics"""
-    try:
-        stats = await history_manager.get_history_stats(
-            db=db,
-            days=days,
-            user_id=current_user.id
-        )
-        return stats
-        
-    except Exception as e:
-        logger.error(f"Error getting history stats: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get history stats"
-        )
-
-
 @router.delete("/clear/all")
 async def clear_history(
     current_user: UserInDB = Depends(get_current_user),
     db = Depends(get_db)
 ):
-    """Clear all history for the current user"""
+    """Clear all history for the current user (admins clear everything)"""
     try:
-        count = await history_manager.clear_history(db, current_user.id)
+        count = await history_manager.clear_history(db, _user_filter(current_user))
         return {
             "status": "success",
             "message": f"Cleared {count} history entries",

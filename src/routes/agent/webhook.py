@@ -209,7 +209,12 @@ async def webhook_process_next(
     send_email: bool = QueryParam(False),
     language: str = QueryParam("en")
 ):
-    """Process next question in queue and optionally send via email"""
+    """Process next question in queue and optionally send via email.
+    
+    Always returns email_string, email_count, and recipients fields so that
+    downstream automation tools (e.g. n8n) can handle email delivery themselves
+    even when send_email=false.
+    """
     
     if not rate_limit:
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
@@ -299,21 +304,34 @@ async def webhook_process_next(
         except Exception as e:
             logger.warning(f"⚠️ Generation error: {str(e)}")
         
+        # ============================================
+        # ✅ ALWAYS fetch recipient list for downstream tools (n8n etc.)
+        # ============================================
+        try:
+            recipient_emails = await get_recipient_emails(db)
+            email_string_value = ", ".join(recipient_emails)
+            email_count_value = len(recipient_emails)
+        except Exception as e:
+            logger.warning(f"⚠️ Could not fetch recipients: {str(e)}")
+            recipient_emails = []
+            email_string_value = ""
+            email_count_value = 0
+        
+        # Optionally send email from backend (legacy path; keep off if using n8n)
         email_data = None
         if send_email:
             try:
-                emails = await get_recipient_emails(db)
-                if emails:
+                if recipient_emails:
                     from src.services.email_sender import send_batch_emails
                     email_result = await send_batch_emails(
-                        to_emails=emails,
+                        to_emails=recipient_emails,
                         subject=f"Daily Economic Analysis: {question_text[:50]}...",
                         body=result.get("answer", ""),
                         html_body=None
                     )
                     email_data = {
                         "sent": True,
-                        "recipients": len(emails),
+                        "recipients": len(recipient_emails),
                         "sent_count": email_result.get("sent_count", 0),
                         "failed_emails": email_result.get("failed_emails", [])
                     }
@@ -333,11 +351,18 @@ async def webhook_process_next(
             "timestamp": datetime.utcnow().isoformat(),
             "question": question_text,
             "answer": result.get("answer", ""),
+            "response": result.get("answer", ""),  # alias for n8n templates
             "processing_time_seconds": round(processing_time, 3),
+            "processing_time": round(processing_time, 3),  # alias for n8n templates
             "iterations": result.get("attempts", 1),
             "response_type": result.get("response_type", "answer"),
             "queue_remaining": await get_question_count(db),
             "next_question": next_text,
+            # ✅ Always-present recipient fields for n8n Email Send node
+            "email_string": email_string_value,
+            "email_count": email_count_value,
+            "recipients": recipient_emails,
+            # Legacy backend-send result (null when send_email=false)
             "email": email_data,
             "error": result.get("error")
         }

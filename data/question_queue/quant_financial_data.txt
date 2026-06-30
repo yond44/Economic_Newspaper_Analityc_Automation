@@ -1,0 +1,275 @@
+========================================================
+TABLE 1: INDONESIAN MARKET VALUATIONS BY SECTOR (DETAILED)
+========================================================
+SECTOR                | CURRENT P/E | 5-YR AVG | P/B  | DIV YIELD (%) | ROE (%) | DEBT/EQTY | ESG SCORE
+----------------------|-------------|----------|------|---------------|---------|-----------|-----------
+Banking (IDX Banks)   | 14.2x       | 16.5x    | 1.8x | 4.8           | 18.5    | 8.5       | 72 (BB)
+Consumer Cyclical     | 22.4x       | 24.1x    | 3.2x | 2.1           | 14.2    | 1.2       | 65 (B)
+Consumer Staples      | 18.1x       | 19.2x    | 2.5x | 3.8           | 15.1    | 0.9       | 78 (BBB)
+Healthcare            | 18.9x       | 20.2x    | 2.1x | 3.5           | 11.8    | 0.9       | 70 (BB)
+Tech (Software)       | 28.1x       | 25.0x    | 4.5x | 0.5           | 8.2     | 0.4       | 55 (B-)
+Energy (Coal/Oil)     | 6.2x        | 7.8x     | 1.2x | 12.3          | 28.5    | 1.5       | 60 (B)
+Infrastructure        | 11.5x       | 13.0x    | 1.1x | 5.2           | 9.5     | 3.2       | 68 (BB)
+Property/Real Estate  | 15.3x       | 14.5x    | 0.9x | 3.1           | 6.2     | 3.8       | 62 (B)
+Mining (ex-Coal)      | 10.5x       | 12.2x    | 1.5x | 6.2           | 22.1    | 1.8       | 58 (B-)
+Telecommunications    | 16.8x       | 17.5x    | 2.2x | 4.5           | 13.4    | 1.9       | 75 (BBB)
+
+========================================================
+TABLE 2: CURRENCY & BOND YIELD MATRIX (FULL FORWARD CURVE)
+========================================================
+INSTRUMENT            | SPOT       | 1-MONTH   | 3-MONTH   | 6-MONTH   | 1-YEAR    | IMPLIED VOL (1Y)
+----------------------|------------|-----------|-----------|-----------|-----------|-------------------
+USD/IDR               | 16,200     | 16,280    | 16,420    | 16,600    | 16,950    | 12.5%
+EUR/IDR               | 17,350     | 17,410    | 17,520    | 17,680    | 18,050    | 10.1%
+GBP/IDR               | 20,500     | 20,580    | 20,720    | 20,900    | 21,300    | 11.2%
+JPY/IDR               | 105.50     | 105.80    | 106.20    | 106.80    | 107.50    | 8.3%
+CNY/IDR               | 2,230      | 2,240     | 2,250     | 2,270     | 2,300     | 7.5%
+SGD/IDR               | 12,010     | 12,050    | 12,120    | 12,220    | 12,400    | 9.2%
+INDON 10-YR Bond      | 6.85%      | 6.90%     | 7.05%     | 7.15%     | 7.30%     | 14.2% (bp vol)
+INDON 5-YR Bond       | 6.45%      | 6.50%     | 6.60%     | 6.70%     | 6.85%     | 12.8%
+INDON 2-YR Bond       | 6.10%      | 6.15%     | 6.25%     | 6.35%     | 6.50%     | 11.0%
+US 10-YR Treasury     | 4.45%      | 4.50%     | 4.60%     | 4.70%     | 4.80%     | 16.5%
+US 2-YR Treasury      | 4.80%      | 4.85%     | 4.95%     | 5.05%     | 5.10%     | 18.0%
+Spread (IDN-US 10Y)   | 240 bps    | 240 bps   | 245 bps   | 245 bps   | 250 bps   | N/A
+
+========================================================
+TABLE 3: GLOBAL COMMODITIES SPOT & FUTURES CURVE
+========================================================
+COMMODITY             | SPOT      | 1-MTH FUT | 3-MTH FUT | 6-MTH FUT | STORAGE COST | 52-WK RANGE
+----------------------|-----------|-----------|-----------|-----------|--------------|-------------
+Gold (XAU)            | 2,455.00  | 2,460.00  | 2,470.00  | 2,490.00  | 0.2%         | 1,980 - 2,455
+Silver (XAG)          | 29.80     | 29.90     | 30.10     | 30.50     | 0.5%         | 22.0 - 31.5
+Platinum              | 1,020     | 1,025     | 1,035     | 1,050     | 0.3%         | 850 - 1,100
+WTI Oil               | 82.50     | 83.20     | 84.50     | 86.00     | 1.5%         | 70.0 - 95.0
+Brent Oil             | 86.00     | 86.80     | 88.00     | 89.50     | 1.2%         | 75.0 - 98.0
+Natural Gas (Henry)   | 2.85      | 2.90      | 2.95      | 3.10      | 3.0%         | 2.0 - 4.0
+Nickel (LME)          | 19,200    | 19,500    | 20,100    | 21,000    | 0.8%         | 15,000 - 22,000
+Copper                | 10,200    | 10,350    | 10,600    | 11,000    | 0.6%         | 8,500 - 11,000
+Aluminum              | 2,650     | 2,670     | 2,700     | 2,750     | 0.7%         | 2,200 - 2,800
+Palm Oil (CPO)        | 4,150     | 4,180     | 4,250     | 4,380     | 2.0%         | 3,700 - 4,800
+Coal (Newcastle)      | 145.00    | 147.00    | 150.00    | 155.00    | 3.5%         | 120 - 180
+Rubber                 | 1.80      | 1.82      | 1.85      | 1.90      | 1.8%         | 1.50 - 2.00
+Lithium (Carbonate)   | 12,000    | 12,200    | 12,500    | 13,000    | 2.5%         | 9,000 - 18,000
+
+========================================================
+TABLE 4: CRYPTO & DEFI METRICS (DETAILED WITH LIQUIDITY)
+========================================================
+CRYPTO ASSET          | PRICE     | MARKET CAP | 24H VOL | 7D CHANGE | 30D CHANGE | YTD CHANGE | # ACTIVE ADDR
+----------------------|-----------|------------|---------|-----------|------------|------------|---------------
+Bitcoin (BTC)         | 72,400    | 1.42T      | 28.5B   | +4.2%     | +8.5%      | +45%       | 1.2M
+Ethereum (ETH)        | 3,800     | 456B       | 12.1B   | +5.8%     | +12.2%     | +32%       | 650K
+Solana (SOL)          | 172.00    | 78B        | 2.8B    | +1.2%     | +6.5%      | +90%       | 380K
+Cardano (ADA)         | 0.48      | 17B        | 0.9B    | -0.5%     | +2.0%      | +15%       | 120K
+BNB                   | 620       | 95B        | 1.5B    | +2.0%     | +5.5%      | +20%       | 90K
+XRP                   | 0.55      | 30B        | 0.8B    | +0.5%     | +1.5%      | +8%        | 75K
+Avalanche (AVAX)      | 38.50     | 14B        | 0.5B    | +6.0%     | +15.0%     | +55%       | 40K
+Chainlink (LINK)      | 16.20     | 9.5B       | 0.4B    | +3.2%     | +7.8%      | +25%       | 25K
+Total DeFi TVL        | N/A       | 115.5B     | N/A     | +2.0%     | +8.5%      | +40%       | N/A
+DeFi TVL Breakdown:   |           |            |         |           |            |            |
+- Lending (Aave)      | N/A       | 28.5B      | N/A     | +1.5%     | +5.0%      | +35%       | N/A
+- DEXs (Uniswap)      | N/A       | 22.0B      | N/A     | +2.5%     | +7.0%      | +30%       | N/A
+- Staking (Lido)      | N/A       | 32.0B      | N/A     | +1.8%     | +6.0%      | +45%       | N/A
+- Restaking (Eigen)   | N/A       | 15.0B      | N/A     | +5.0%     | +20.0%     | +150%      | N/A
+Stablecoin Supply     | N/A       | 190.0B     | N/A     | +1.5%     | +3.2%      | +12%       | N/A
+
+========================================================
+TABLE 5: MACROECONOMIC INDICATORS (INDONESIA & GLOBAL)
+========================================================
+INDICATOR                     | VALUE    | PREVIOUS | CONSENSUS | ACTUAL VS CONS | STATUS
+------------------------------|----------|----------|-----------|----------------|-----------
+BI Rate (Juni 2026)           | 5.75%    | 5.75%    | 5.75%     | 0 bps          | HOLD
+Core Inflation (YoY)          | 2.40%    | 2.30%    | 2.45%     | -5 bps         | BELOW TARGET
+Headline Inflation (YoY)      | 3.00%    | 2.90%    | 3.10%     | -10 bps        | WITHIN TARGET
+GDP Growth (Q1 2026)          | 5.11%    | 5.04%    | 5.05%     | +6 bps         | BEAT
+GDP Growth (Full Year 2026F)  | 5.2%     | 5.0%     | 5.1%      | +10 bps        | UPGRADE
+Foreign Reserves (USD)        | 145.2B   | 146.0B   | 144.0B    | +1.2B          | STABLE
+Trade Balance (May 2026)      | +3.2B    | +2.8B    | +3.0B     | +0.2B          | SURPLUS
+Current Account (Q1 2026)     | -1.2%    | -0.8%    | -1.0%     | -20 bps        | WIDENING
+Manufacturing PMI (Juni)      | 53.2     | 52.8     | 53.0      | +0.2           | EXPANSION
+Consumer Confidence (Mei)     | 112.5    | 115.0    | 113.0     | -0.5           | DECLINING
+Unemployment Rate (Feb 2026)  | 5.2%     | 5.5%     | 5.3%      | -10 bps        | IMPROVING
+FDI (YoY, Q1 2026)            | +8.2%    | +6.5%    | +7.0%     | +1.2%          | STRONG
+US GDP Growth (Q2 2026 Est)   | 2.1%     | 1.8%     | 2.0%      | +10 bps        | RESILIENT
+US CPI (YoY, May 2026)        | 3.5%     | 3.4%     | 3.5%      | 0 bps          | STICKY
+US Unemployment (May 2026)    | 3.9%     | 4.0%     | 3.9%      | 0 bps          | STABLE
+China GDP (Q2 2026 Est)       | 4.8%     | 5.2%     | 4.9%      | -10 bps        | SLOWING
+China PMI (Manufacturing)     | 49.5     | 50.2     | 49.8      | -0.3           | CONTRACTION
+Eurozone GDP (Q1 2026)        | 0.8%     | 0.5%     | 0.7%      | +10 bps        | WEAK RECOVERY
+Eurozone CPI (YoY, May 2026)  | 2.2%     | 2.1%     | 2.3%      | -10 bps        | NEAR TARGET
+Japan GDP (Q1 2026)           | 0.5%     | 0.8%     | 0.6%      | -10 bps        | STAGNATION
+
+========================================================
+TABLE 6: CORRELATION MATRIX (6-MONTH ROLLING)
+========================================================
+ASSET 1        | ASSET 2            | CORRELATION | SIGNIFICANCE
+---------------|--------------------|-------------|-------------
+JCI (IDX)      | S&P 500            | +0.72       | HIGH
+JCI (IDX)      | USD/IDR            | -0.65       | HIGH (Rupiah weak = JCI down)
+JCI (IDX)      | Gold               | +0.15       | LOW
+USD/IDR        | US 10Y Yield       | +0.55       | MODERATE
+Gold           | US 10Y Real Yield  | -0.40       | MODERATE (Negative)
+Bitcoin        | S&P 500            | +0.45       | MODERATE
+Bitcoin        | Gold               | +0.20       | LOW
+Oil (WTI)      | IDX Energy         | +0.85       | VERY HIGH
+Copper         | JCI (IDX)          | +0.35       | LOW-MODERATE
+Palm Oil       | IDX Consumer       | -0.10       | VERY LOW
+IDR Bond 10Y   | US 10Y Yield       | +0.60       | HIGH (Spillover)
+IDR Bond 10Y   | BI Rate            | +0.80       | VERY HIGH
+
+========================================================
+TABLE 7: VOLATILITY & RISK METRICS (30-DAY ANNUALIZED)
+========================================================
+ASSET/INDEX               | VOLATILITY (%) | VAR 95% (1D) | VAR 95% (1W) | SHARPE RATIO (1Y)
+--------------------------|----------------|--------------|--------------|-------------------
+JCI (IDX)                 | 18.5           | -2.1%        | -4.8%        | 1.2
+S&P 500                   | 16.2           | -1.8%        | -4.2%        | 1.8
+USD/IDR                   | 12.5           | -1.4%        | -3.2%        | N/A (Currency)
+Gold                      | 14.5           | -1.6%        | -3.7%        | 2.1
+Bitcoin                   | 55.0           | -6.2%        | -14.5%       | 1.5
+WTI Oil                   | 28.0           | -3.1%        | -7.2%        | 0.8
+IDR 10Y Bond              | 8.5            | -0.9%        | -2.1%        | 0.9 (Yield play)
+IDR Corporate Bond (BBB)  | 12.0           | -1.3%        | -3.0%        | 1.1
+
+========================================================
+TABLE 8: EARNINGS SEASON SCHEDULE & FORECASTS (INDONESIA)
+========================================================
+COMPANY         | SECTOR      | REPORT DATE | EPS (EST) | EPS (YOY) | REVENUE (EST) | REV YOY | RECOMMENDATION
+----------------|-------------|-------------|-----------|-----------|---------------|---------|---------------
+BBRI (BRI)      | Banking     | 2026-07-25  | Rp 850    | +12%      | 45.0T IDR     | +9%     | BUY
+BMRI (Mandiri)  | Banking     | 2026-07-28  | Rp 1,200  | +10%      | 50.0T IDR     | +8%     | BUY
+BBCA (BCA)      | Banking     | 2026-08-01  | Rp 950    | +8%       | 48.0T IDR     | +7%     | HOLD
+TLKM (Telkom)   | Telecom     | 2026-08-10  | Rp 650    | +5%       | 35.0T IDR     | +6%     | BUY
+GOTO (GoTo)     | Tech        | 2026-08-25  | -Rp 50    | N/A       | 15.0T IDR     | +15%    | HOLD
+UNVR (Unilever) | Consumer    | 2026-07-30  | Rp 300    | -5%       | 12.0T IDR     | -2%     | UNDERWEIGHT
+ADRO (Adaro)    | Energy/Coal | 2026-08-05  | Rp 1,800  | +20%      | 25.0T IDR     | +18%    | BUY
+ANTM (Antam)    | Mining      | 2026-08-12  | Rp 420    | +15%      | 10.0T IDR     | +12%    | BUY
+DCI (DCI Ind)   | Tech/Data   | 2026-08-20  | Rp 150    | +30%      | 3.0T IDR      | +25%    | BUY
+
+========================================================
+TABLE 9: CENTRAL BANK BALANCE SHEETS & INTERVENTIONS (JUNE 2026)
+========================================================
+CENTRAL BANK   | TOTAL ASSETS (USD) | MOM CHANGE | QTD CHANGE | FX RESERVES (USD) | FX RESERVE CHANGE | POLICY TOOL
+---------------|--------------------|------------|------------|-------------------|-------------------|---------------
+Fed (US)       | 7.2T               | -0.5%      | -1.2%      | N/A               | N/A               | QT $40B/mo
+ECB            | 6.8T               | -0.3%      | -0.8%      | N/A               | N/A               | QT €25B/mo
+BoJ            | 5.1T               | +0.2%      | +0.5%      | 1.2T              | +$5B              | YCC, JGB buying
+PBoC (China)   | 6.5T               | +0.8%      | +2.0%      | 3.2T              | +$15B             | RRR cut, MLF
+BI (Indonesia) | 145.2B             | -0.5%      | -1.8%      | 145.2B            | -$0.8B            | DNDF intervention
+
+========================================================
+TABLE 10: GEOPOLITICAL RISK INDEX (GPR) & IMPACT SCORE
+========================================================
+REGION / EVENT                | GPR SCORE (0-100) | MOM CHANGE | IMPACT ON COMMODITIES | IMPACT ON IDX
+------------------------------|-------------------|------------|-----------------------|--------------
+South China Sea               | 78                | +12        | Oil +5%, Copper +2%   | -2.5%
+Middle East (Israel-Hezbollah)| 85                | +15        | Gold +8%, Oil +10%    | -3.0%
+Ukraine-Russia War            | 72                | +8         | Wheat +8%, Gold +3%   | -1.5%
+US-China Tariff War           | 82                | +10        | Nickel -3%, Tech -5%  | -4.0%
+Taiwan Strait Tensions        | 70                | +5         | Semiconductors -5%    | -3.5%
+EUDR Enforcement              | 60                | -5         | Palm Oil -2%          | -1.0%
+Indonesia Election 2027       | 40                | +10        | Neutral               | +0.5% (Infra focus)
+
+========================================================
+**TABLE 11: INDONESIAN MUTUAL FUND PERFORMANCE (JUNE 2026)**
+========================================================
+FUND NAME                | CATEGORY      | 1M RET | 3M RET | YTD RET | 1Y RET | AUM (IDR T) | EXPENSE RATIO
+-------------------------|---------------|--------|--------|---------|--------|-------------|--------------
+Mandiri Investa Equity   | Equity        | +2.5%  | +6.8%  | +12.2%  | +18.5% | 15.2        | 1.85%
+BNI Dana Saham           | Equity        | +2.2%  | +6.2%  | +11.5%  | +17.2% | 8.5         | 1.95%
+BCA Dana Prima           | Equity        | +2.8%  | +7.1%  | +13.0%  | +19.1% | 12.0        | 1.75%
+Danareksa Mawar          | Balanced      | +1.8%  | +4.5%  | +8.2%   | +12.5% | 6.8         | 1.50%
+Sucorinvest Equity       | Equity        | +2.1%  | +5.9%  | +10.8%  | +16.0% | 4.2         | 2.10%
+Schroder Dana Prestasi   | Equity        | +2.6%  | +6.5%  | +12.5%  | +18.8% | 10.5        | 1.80%
+Indo Premier Equity      | Equity        | +2.3%  | +6.0%  | +11.2%  | +17.0% | 5.8         | 1.90%
+Trimegah Dana Saham      | Equity        | +2.0%  | +5.5%  | +10.5%  | +15.8% | 3.5         | 2.00%
+RHB Indonesia Equity     | Equity        | +2.4%  | +6.3%  | +11.8%  | +17.5% | 4.8         | 1.85%
+Avrist Equity            | Equity        | +1.9%  | +5.2%  | +10.0%  | +15.2% | 2.5         | 2.10%
+
+========================================================
+**TABLE 12: INDONESIAN SUKUK (ISLAMIC BOND) ISSUANCES**
+========================================================
+ISSUER          | SERIES      | TENOR | COUPON (%) | ISSUE DATE | MATURITY | OUTSTANDING (IDR T)
+----------------|-------------|-------|------------|------------|----------|-------------------
+Govt of Indon   | SR001       | 5Y    | 6.25%      | Jan 2025   | Jan 2030 | 25.0
+Govt of Indon   | SR002       | 10Y   | 6.85%      | Jun 2025   | Jun 2035 | 35.0
+Govt of Indon   | SR003       | 15Y   | 7.10%      | Dec 2025   | Dec 2040 | 15.0
+Govt of Indon   | SR004 (Green)| 7Y   | 6.50%      | Mar 2026   | Mar 2033 | 20.0
+Bank Indonesia  | BI Sukuk   | 2Y    | 6.00%      | May 2026   | May 2028 | 10.0
+Pertamina       | PERT-GS    | 5Y    | 7.25%      | Feb 2026   | Feb 2031 | 5.0
+PLN             | PLN-SK     | 7Y    | 7.50%      | Apr 2026   | Apr 2033 | 4.0
+Telkom          | TLK-SK     | 5Y    | 6.95%      | Jan 2026   | Jan 2031 | 3.0
+
+========================================================
+**TABLE 13: INDONESIAN REGIONAL GDP GROWTH (Q1 2026)**
+========================================================
+REGION          | GDP GROWTH (%) | CONTRIBUTION TO NATIONAL | SECTOR DRIVERS
+----------------|----------------|--------------------------|---------------
+Sumatra         | 4.8%           | 22%                      | Palm oil, coal, plantations
+Java            | 5.6%           | 58%                      | Manufacturing, services, finance
+Kalimantan      | 5.2%           | 10%                      | Coal, mining, forestry
+Sulawesi        | 6.5%           | 5%                       | Nickel, agriculture
+Bali & Nusra    | 4.5%           | 2%                       | Tourism, trade
+Papua & Maluku  | 3.8%           | 3%                       | Mining, fisheries
+Average         | 5.2%           | 100%                     | N/A
+
+========================================================
+**TABLE 14: GLOBAL INTEREST RATE FORECASTS (2026-2027)**
+========================================================
+COUNTRY | CURRENT RATE | Q3 2026F | Q4 2026F | Q1 2027F | Q2 2027F | POLICY BIAS
+--------|--------------|----------|----------|----------|----------|------------
+US (Fed)| 5.25-5.50%   | 5.25-5.50% | 5.00-5.25% | 4.75-5.00% | 4.50-4.75% | Hawkish hold
+Eurozone (ECB) | 3.25% | 3.00% | 2.75% | 2.50% | 2.25% | Dovish
+UK (BoE)| 5.00%       | 4.75% | 4.50% | 4.25% | 4.00% | Cautious
+Japan (BoJ)| 0.25% | 0.50% | 0.75% | 0.75% | 1.00% | Hawkish
+China (PBoC)| 3.10% | 3.00% | 2.90% | 2.80% | 2.70% | Dovish
+India (RBI)| 6.50% | 6.25% | 6.00% | 5.75% | 5.50% | Neutral
+Indonesia (BI)| 5.75% | 5.75% | 5.50% | 5.25% | 5.00% | Neutral
+
+========================================================
+**TABLE 15: STOCK MARKET TECHNICAL INDICATORS (IDX)**
+========================================================
+INDICATOR                | VALUE   | SIGNAL | DESCRIPTION
+-------------------------|---------|--------|-------------
+JCI Closing Price        | 7,050   | N/A    | Near support level
+50-Day MA                | 7,120   | BEARISH| Price below 50MA
+200-Day MA               | 6,850   | BULLISH| Price above 200MA
+RSI (14-Day)             | 32.5    | OVERSOLD| Below 30 is oversold
+MACD Line                | -12.5   | BEARISH| Below signal line
+Stochastic Oscillator    | 24.8    | OVERSOLD| Below 20 is oversold
+Bollinger Upper          | 7,280   | N/A    | Resistance level
+Bollinger Lower          | 6,980   | N/A    | Support level
+Volume (Avg 30-Day)      | 14.8B   | NEUTRAL| Average volume
+A/D Line                 | -2.5    | BEARISH| More declining stocks
+Put/Call Ratio           | 1.15    | BULLISH| Above 1 is bullish
+VIX Indonesia            | 22.5    | MODERATE| Implied vol 22.5%
+
+========================================================
+**TABLE 16: INDONESIAN BOND LIQUIDITY METRICS (JUNE 2026)**
+========================================================
+BOND TYPE           | OUTSTANDING (IDR T) | AVG DAILY VOL (IDR T) | TURNOVER RATIO | BID-ASK SPREAD (bps)
+--------------------|---------------------|-----------------------|----------------|----------------------
+Govt 10Y (FR0100)   | 450                 | 5.2                   | 1.15%          | 5
+Govt 5Y (FR0099)    | 320                 | 3.8                   | 1.19%          | 6
+Govt 2Y (FR0098)    | 180                 | 2.1                   | 1.17%          | 7
+Govt Sukuk 10Y      | 120                 | 0.8                   | 0.67%          | 12
+Corporate AAA 5Y    | 45                  | 0.2                   | 0.44%          | 25
+Corporate AA 5Y     | 35                  | 0.1                   | 0.29%          | 40
+Corporate A 5Y      | 20                  | 0.05                  | 0.25%          | 60
+Regional Bond       | 15                  | 0.03                  | 0.20%          | 80
+
+========================================================
+**TABLE 17: INDONESIAN FOREIGN DIRECT INVESTMENT (FDI) BY SOURCE**
+========================================================
+COUNTRY OF ORIGIN | 2024 FDI (USD B) | 2025 FDI (USD B) | 2026 YTD (USD B) | SECTOR FOCUS
+------------------|------------------|------------------|------------------|---------------
+Singapore         | 8.5              | 9.2              | 4.5              | Finance, tech, real estate
+China             | 6.2              | 5.8              | 2.8              | Manufacturing, mining
+Japan             | 3.8              | 4.1              | 2.0              | Automotive, electronics
+Malaysia          | 2.5              | 2.8              | 1.3              | Plantation, finance
+US                | 2.2              | 2.5              | 1.2              | Tech, energy, consumer
+Hong Kong         | 2.0              | 1.8              | 0.9              | Real estate, trading
+South Korea       | 1.8              | 2.0              | 1.0              | Electronics, automotive
+Netherlands       | 1.5              | 1.6              | 0.7              | Consumer goods, food
+Australia         | 1.2              | 1.3              | 0.6              | Mining, education
+Others            | 4.3              | 4.7              | 2.5              | Diversified
+TOTAL             | 34.0             | 35.8             | 17.5             | N/A
