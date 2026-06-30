@@ -24,13 +24,12 @@ langgraph
 groq
 
 # LlamaIndex - Comment these out (they're causing the hang)
-# llama-index
-# llama-index-core
-# llama-index-llms-groq
-# llama-index-vector-stores-qdrant
-# llama-index-vector-stores-chroma==0.5.5
-# llama-index-embeddings-ollama
-# llama-index-embeddings-fastembed
+llama-index
+llama-index-core
+llama-index-llms-groq
+llama-index-vector-stores-chroma==0.5.5
+llama-index-embeddings-ollama
+llama-index-embeddings-fastembed
 
 # Vector Databases & Embeddings
 chromadb
@@ -43,8 +42,6 @@ pydantic-settings
 pydantic-core
 
 # Utilitiess
-tenacity
-jinja2
 httpx
 requests
 
