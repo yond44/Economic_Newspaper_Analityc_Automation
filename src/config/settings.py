@@ -4,8 +4,15 @@ Application Settings Configuration
 import os
 from dotenv import load_dotenv
 from typing import Optional
+import logging
 
-load_dotenv()
+# Load .env file - but don't fail if it doesn't exist
+try:
+    load_dotenv()
+except Exception as e:
+    logging.warning(f"⚠️ Could not load .env file: {e}")
+
+logger = logging.getLogger(__name__)
 
 # ============================================
 # APPLICATION SETTINGS
@@ -113,13 +120,13 @@ CORS_ALLOW_HEADERS = ["*"]
 
 def validate_settings() -> bool:
     """Validate critical settings"""
-    import logging
-    
     logger = logging.getLogger(__name__)
     
     # Required settings
     required_settings = {
         "GROQ_API_KEY": GROQ_API_KEY,
+        "MONGO_URL": MONGO_URL,
+        "QDRANT_URL": QDRANT_URL,
     }
     
     missing = [key for key, value in required_settings.items() if not value]
@@ -135,7 +142,12 @@ def validate_settings() -> bool:
     
     if missing:
         logger.warning(f"⚠️ Missing environment variables: {', '.join(missing)}")
-        return len(missing) == 0
+        # Don't return False for missing API keys in development
+        if ENVIRONMENT == "production":
+            return False
+        else:
+            logger.warning("⚠️ Running in development mode - some features may be limited")
+            return True
     
     logger.info(f"✓ Settings validated successfully (Environment: {ENVIRONMENT})")
     return True

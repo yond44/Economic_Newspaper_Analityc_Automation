@@ -2,30 +2,32 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and memory-efficient libraries
 RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Use faster mirror
-RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+# Create necessary directories
+RUN mkdir -p /app/logs /app/models_cache /app/data
 
-# Install problematic package first with longer timeout
-RUN pip install --no-cache-dir --timeout=1000 --retries=10 llama-index-llms-groq
-
-# Copy requirements and install rest
+# Copy and install requirements with memory optimizations
 COPY requirements.txt .
-RUN pip install --no-cache-dir --timeout=1000 --use-deprecated=legacy-resolver -r requirements.txt
+RUN pip install --no-cache-dir --timeout=1000 --retries=5 -r requirements.txt
 
-# Copy application code (NO .env!)
+# Copy application
 COPY src/ ./src/
 COPY data/ ./data/
 
-# Create directories for logs
-RUN mkdir -p /app/logs
+# Set environment variables - these help reduce memory usage
+ENV PYTHONUNBUFFERED=1
+ENV FASTEMBED_CACHE_DIR=/app/models_cache
+ENV ENVIRONMENT=production
+ENV OMP_NUM_THREADS=1
+ENV MALLOC_ARENA_MAX=2
+ENV PYTHONPATH=/app
 
-# Expose port - Render uses PORT environment variable
+# Expose port
 EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run with Render's PORT
+CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info"]
