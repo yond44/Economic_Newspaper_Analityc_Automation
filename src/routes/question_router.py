@@ -11,6 +11,8 @@ from src.services.email_manager import get_all_emails
 from src.services.history_manager import create_history_entry
 from src.models.history import SentHistoryCreate, ChannelType, DeliveryStatus
 
+from src.services import automation_manager
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/questions", tags=["questions"])
@@ -247,26 +249,70 @@ async def n8n_generate_question(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============================================================
+# PATCH UNTUK src/routes/question_router.py
+# ============================================================
+#
+# Tambah import baru di top file (setelah import lain):
+#
+#     from src.services import automation_manager
+#     from src.models.automation import AutomationType
+#
+# Lalu ganti function n8n_process_and_refill (sekitar baris 197) dengan
+# versi di bawah. Yang baru ditandai komentar "GATEKEEPER".
+# ============================================================
+
+
 @router.post("/n8n/process-and-refill")
 async def n8n_process_and_refill(
     db = Depends(get_db),
-    num_to_generate: int = Query(5, ge=1, le=20, description="Number of new questions to generate"),
-    language: str = Query("en", description="Response language")
+    num_to_generate: int = Query(5, ge=1, le=20),
+    language: str = Query("en"),
+    bypass_pause: bool = Query(False, description="Bypass pause check (debug only)"),
 ):
     """N8N: Process next question and refill queue with LLM-generated questions"""
+    
+    # =================================================================
+    # GATEKEEPER CHECK - skip kalau n8n AI automation di-pause
+    # =================================================================
+    if not bypass_pause:
+        enabled = await automation_manager.is_automation_enabled(
+            db, AutomationType.N8N_AI_GENERATED
+        )
+        if not enabled:
+            await automation_manager.record_run(
+                db, AutomationType.N8N_AI_GENERATED,
+                status="skipped",
+                error="Automation di-pause oleh user",
+            )
+            logger.info("⏸️ n8n AI automation paused — skipping run")
+            return {
+                "status": "skipped",
+                "reason": "automation_paused",
+                "message": "n8n AI automation sedang di-pause",
+                "question": None,
+                "response": "",
+                "processing_time": 0,
+                "iterations": 0,
+                "queue_remaining": await question_manager.get_question_count(db),
+                "next_question": None,
+                "new_questions_generated": 0,
+                "email_recipients": [],
+                "email_count": 0,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+    # =================================================================
+    
     try:
         from src.services.agent import ask_agent
         from src.services.question_manager import n8n_generate_questions_with_llm
         
-        # Get next question
         question_data = await question_manager.get_next_question(db)
         
         if not question_data:
-            # If no questions, generate some
             logger.info("📭 No pending questions, generating new ones...")
             new_questions = await n8n_generate_questions_with_llm(
-                db=db,
-                num_questions=num_to_generate
+                db=db, num_questions=num_to_generate
             )
             
             for q in new_questions:
@@ -275,37 +321,34 @@ async def n8n_process_and_refill(
             question_data = await question_manager.get_next_question(db)
             
             if not question_data:
+                await automation_manager.record_run(
+                    db, AutomationType.N8N_AI_GENERATED,
+                    status="failed", error="Could not generate questions",
+                )
                 return {
                     "status": "warning",
                     "message": "No questions available even after generation",
                     "queue_remaining": await question_manager.get_question_count(db),
-                    "question": None,
-                    "response": None,
-                    "processing_time": 0,
-                    "iterations": 0
+                    "question": None, "response": None,
+                    "processing_time": 0, "iterations": 0,
                 }
         
         question_text = question_data.get("text", "")
-        
         logger.info(f"📝 Processing question: {question_text[:100]}...")
         
-        # Process with agent
         result = await ask_agent(
             question=question_text,
             db=db,
             language=language,
-            channel="api"
+            channel="api",
         )
         
         processing_time = result.get("processing_time", 0)
         
-        # Archive processed question
         await question_manager.remove_first_question(db)
         
-        # Generate new questions to refill queue
         new_questions = await n8n_generate_questions_with_llm(
-            db=db,
-            num_questions=num_to_generate
+            db=db, num_questions=num_to_generate
         )
         
         added_count = 0
@@ -317,11 +360,9 @@ async def n8n_process_and_refill(
         next_q = await question_manager.get_next_question(db)
         next_text = next_q.get("text") if next_q else None
         
-        # Get email list for n8n
         emails = await get_all_emails(db)
         email_list = [e.get("email") for e in emails if e.get("email")]
         
-        # Log to history
         if result.get("success"):
             history_data = SentHistoryCreate(
                 question=question_text,
@@ -337,16 +378,26 @@ async def n8n_process_and_refill(
                 sources=result.get("sources", []),
                 thread_id=result.get("thread_id"),
                 user_id="system",
-                username="n8n-automation"
+                username="n8n-automation",
             )
             
             await create_history_entry(
                 db=db,
                 history_data=history_data,
                 user_id="system",
-                username="n8n-automation"
+                username="n8n-automation",
             )
             logger.info(f"✅ History logged for question: {question_text[:50]}...")
+        
+        # =================================================================
+        # GATEKEEPER: record sukses
+        # =================================================================
+        await automation_manager.record_run(
+            db, AutomationType.N8N_AI_GENERATED,
+            status="success" if result.get("success") else "failed",
+            error=result.get("error"),
+        )
+        # =================================================================
         
         return {
             "status": "success" if result.get("success") else "warning",
@@ -362,13 +413,16 @@ async def n8n_process_and_refill(
             "email_recipients": email_list,
             "email_count": len(email_list),
             "timestamp": datetime.utcnow().isoformat(),
-            "message": f"Processed question and refilled queue with {added_count} new questions"
+            "message": f"Processed question and refilled queue with {added_count} new questions",
         }
         
     except Exception as e:
+        await automation_manager.record_run(
+            db, AutomationType.N8N_AI_GENERATED,
+            status="failed", error=str(e),
+        )
         logger.error(f"Error in n8n process: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/n8n/refill")
 async def n8n_refill_queue(

@@ -423,6 +423,17 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Database connection failed: {str(e)}")
         raise
     
+    
+    # Initialize automation settings (default off untuk semua)
+    try:
+        from src.config.database import get_database
+        from src.services.automation_manager import ensure_default_settings
+        db = get_database()
+        await ensure_default_settings(db)
+        logger.info("✅ Automation settings initialized")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not init automation settings: {str(e)}")
+        
     # Run data processing pipeline
     try:
         pipeline_ok = await pipeline.run_all_initializations()
@@ -602,6 +613,22 @@ def create_app() -> FastAPI:
     except Exception as e:
         logger.warning(f"⚠️ History router: {type(e).__name__}")
         logger.exception("History router traceback:")
+        
+        
+        # ✅ Automation routes - toggle Aktif/Jeda
+    try:
+        from src.routes.automation_routes import router as automation_router
+        app.include_router(automation_router, prefix="/api/v1")
+        logger.info("✅ Included: automation_router → /api/v1/automation/*")
+        
+        for route in automation_router.routes:
+            if hasattr(route, 'path'):
+                methods = list(route.methods) if hasattr(route, 'methods') and route.methods else ["GET"]
+                logger.info(f"    - {route.path} {methods}")
+        
+    except Exception as e:
+        logger.warning(f"⚠️ Automation router: {type(e).__name__}")
+        logger.exception("Automation router traceback:")
     
     # Health routes
     try:

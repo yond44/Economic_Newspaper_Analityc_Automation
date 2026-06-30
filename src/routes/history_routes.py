@@ -18,6 +18,7 @@ from src.models.history import (
 )
 from src.middleware.auth import get_current_user
 from src.models.user import UserInDB
+from src.services import automation_manager
 
 logger = logging.getLogger(__name__)
 

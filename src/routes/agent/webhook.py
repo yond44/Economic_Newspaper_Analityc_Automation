@@ -21,6 +21,8 @@ from src.services.question_manager import (
     generate_new_question_from_data,
     get_default_fallback_questions
 )
+
+from src.services import automation_manager
 from src.utils.question_logger import log_question
 
 logger = logging.getLogger(__name__)
@@ -198,26 +200,70 @@ async def webhook_ask(
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 
-# ============================================
-# QUEUE PROCESSING WEBHOOK
-# ============================================
+# ============================================================
+# PATCH UNTUK src/routes/agent/webhook.py
+# ============================================================
+#
+# Tambahkan import baru di TOP file (setelah import lain):
+#
+#     from src.services import automation_manager
+#     from src.models.automation import AutomationType
+#
+# Lalu ganti FUNCTION webhook_process_next (sekitar baris 205) dengan
+# versi di bawah. Yang baru ditambahkan ditandai dengan komentar "GATEKEEPER".
+# ============================================================
+
 
 @router.post("/process-next")
 async def webhook_process_next(
     rate_limit: bool = Depends(check_rate_limit),
     db = Depends(get_db),
     send_email: bool = QueryParam(False),
-    language: str = QueryParam("en")
+    language: str = QueryParam("en"),
+    # GATEKEEPER: izinkan bypass kalau perlu (debugging manual lewat curl)
+    bypass_pause: bool = QueryParam(False, description="Bypass pause check (debug only)"),
 ):
-    """Process next question in queue and optionally send via email.
-    
-    Always returns email_string, email_count, and recipients fields so that
-    downstream automation tools (e.g. n8n) can handle email delivery themselves
-    even when send_email=false.
-    """
+    """Process next question in queue. Akan ditolak halus kalau queue automation paused."""
     
     if not rate_limit:
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
+    
+    # =================================================================
+    # GATEKEEPER CHECK - skip kalau queue automation di-pause
+    # =================================================================
+    if not bypass_pause:
+        enabled = await automation_manager.is_automation_enabled(
+            db, AutomationType.QUEUE_AUTOMATION
+        )
+        if not enabled:
+            await automation_manager.record_run(
+                db, AutomationType.QUEUE_AUTOMATION,
+                status="skipped",
+                error="Automation di-pause oleh user",
+            )
+            logger.info("⏸️ Queue automation paused — skipping run")
+            # Return 200 (BUKAN error) supaya n8n tidak retry/crash
+            return {
+                "status": "skipped",
+                "reason": "automation_paused",
+                "message": "Queue automation sedang di-pause",
+                "timestamp": datetime.utcnow().isoformat(),
+                # Field-field standar tetap ada supaya n8n template tidak crash
+                "question": None,
+                "answer": "",
+                "response": "",
+                "processing_time": 0,
+                "processing_time_seconds": 0,
+                "iterations": 0,
+                "queue_remaining": await get_question_count(db),
+                "next_question": None,
+                "email_string": "",
+                "email_count": 0,
+                "recipients": [],
+                "email": None,
+                "error": None,
+            }
+    # =================================================================
     
     status_data = await get_agent_status()
     if not status_data.get("initialized"):
@@ -226,13 +272,9 @@ async def webhook_process_next(
     try:
         start_time = time.time()
         
-        # Get next question - this might be a string or a dict
         question = await get_next_question(db)
-        
-        # Extract question text if it's a dict or object
         question_text = extract_question_text(question) if question else None
         
-        # If queue empty, generate new question
         if not question_text:
             logger.info("📭 Queue empty, generating new question...")
             new_q = await generate_new_question_from_data(db)
@@ -249,23 +291,25 @@ async def webhook_process_next(
                 question_text = extract_question_text(question) if question else None
         
         if not question_text:
+            await automation_manager.record_run(
+                db, AutomationType.QUEUE_AUTOMATION,
+                status="failed", error="No questions available",
+            )
             return {
                 "status": "error",
                 "message": "No questions available in queue or from generation",
                 "queue_size": await get_question_count(db),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
         
-        # Log with truncated text
         preview = question_text[:100] + "..." if len(question_text) > 100 else question_text
         logger.info(f"📝 Processing queue question: {preview}")
         
-        # Process the question using the text
         result = await ask_agent(
             question=question_text,
             db=db,
             language=language,
-            channel="webhook"
+            channel="webhook",
         )
         
         processing_time = time.time() - start_time
@@ -278,7 +322,7 @@ async def webhook_process_next(
                 processing_time=processing_time,
                 channel="webhook_queue",
                 language=language,
-                success=result.get("success", False)
+                success=result.get("success", False),
             )
         except Exception as e:
             logger.warning(f"⚠️ Log error: {str(e)}")
@@ -286,7 +330,7 @@ async def webhook_process_next(
         try:
             removed = await remove_first_question(db)
             if removed:
-                logger.info(f"✅ Removed from queue")
+                logger.info("✅ Removed from queue")
         except Exception as e:
             logger.warning(f"⚠️ Remove error: {str(e)}")
         
@@ -304,9 +348,7 @@ async def webhook_process_next(
         except Exception as e:
             logger.warning(f"⚠️ Generation error: {str(e)}")
         
-        # ============================================
-        # ✅ ALWAYS fetch recipient list for downstream tools (n8n etc.)
-        # ============================================
+        # Ambil daftar recipient untuk n8n
         try:
             recipient_emails = await get_recipient_emails(db)
             email_string_value = ", ".join(recipient_emails)
@@ -317,7 +359,6 @@ async def webhook_process_next(
             email_string_value = ""
             email_count_value = 0
         
-        # Optionally send email from backend (legacy path; keep off if using n8n)
         email_data = None
         if send_email:
             try:
@@ -327,22 +368,31 @@ async def webhook_process_next(
                         to_emails=recipient_emails,
                         subject=f"Daily Economic Analysis: {question_text[:50]}...",
                         body=result.get("answer", ""),
-                        html_body=None
+                        html_body=None,
                     )
                     email_data = {
                         "sent": True,
                         "recipients": len(recipient_emails),
                         "sent_count": email_result.get("sent_count", 0),
-                        "failed_emails": email_result.get("failed_emails", [])
+                        "failed_emails": email_result.get("failed_emails", []),
                     }
                     logger.info(f"📧 Sent to {email_data['sent_count']} recipients")
             except Exception as e:
                 logger.error(f"❌ Email error: {str(e)}")
                 email_data = {"sent": False, "error": str(e)}
         
+        # =================================================================
+        # GATEKEEPER: record sukses
+        # =================================================================
+        await automation_manager.record_run(
+            db, AutomationType.QUEUE_AUTOMATION,
+            status="success" if result.get("success") else "failed",
+            error=result.get("error"),
+        )
+        # =================================================================
+        
         logger.info(f"✅ Queue processing complete in {processing_time:.2f}s")
         
-        # Get next question for response
         next_q = await get_next_question(db)
         next_text = extract_question_text(next_q) if next_q else None
         
@@ -351,25 +401,27 @@ async def webhook_process_next(
             "timestamp": datetime.utcnow().isoformat(),
             "question": question_text,
             "answer": result.get("answer", ""),
-            "response": result.get("answer", ""),  # alias for n8n templates
+            "response": result.get("answer", ""),
             "processing_time_seconds": round(processing_time, 3),
-            "processing_time": round(processing_time, 3),  # alias for n8n templates
+            "processing_time": round(processing_time, 3),
             "iterations": result.get("attempts", 1),
             "response_type": result.get("response_type", "answer"),
             "queue_remaining": await get_question_count(db),
             "next_question": next_text,
-            # ✅ Always-present recipient fields for n8n Email Send node
             "email_string": email_string_value,
             "email_count": email_count_value,
             "recipients": recipient_emails,
-            # Legacy backend-send result (null when send_email=false)
             "email": email_data,
-            "error": result.get("error")
+            "error": result.get("error"),
         }
         
     except HTTPException:
         raise
     except Exception as e:
+        await automation_manager.record_run(
+            db, AutomationType.QUEUE_AUTOMATION,
+            status="failed", error=str(e),
+        )
         logger.error(f"❌ Queue processing error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
