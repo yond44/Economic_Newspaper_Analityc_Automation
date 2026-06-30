@@ -17,15 +17,14 @@ RUN pip install --no-cache-dir --timeout=1000 --retries=10 llama-index-llms-groq
 COPY requirements.txt .
 RUN pip install --no-cache-dir --timeout=1000 --use-deprecated=legacy-resolver -r requirements.txt
 
-# Copy application code
+# Copy application code (NO .env!)
 COPY src/ ./src/
 COPY data/ ./data/
-COPY .env .
 
 # Create directories for logs
 RUN mkdir -p /app/logs
 
-# Expose port
+# Expose port - Render uses PORT environment variable
 EXPOSE 8000
 
 # Run the application
