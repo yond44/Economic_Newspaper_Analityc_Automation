@@ -42,7 +42,7 @@ pydantic
 pydantic-settings
 pydantic-core
 
-# Utilities
+# Utilitiess
 tenacity
 jinja2
 httpx
